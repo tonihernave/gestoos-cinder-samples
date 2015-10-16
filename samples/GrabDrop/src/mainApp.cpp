@@ -41,11 +41,13 @@ public:
     
     gestoos::nui::Hand hand;
     Vec2f hand_pos_f;
+	Vec2f hand_pos_c;
     
     MovingRect box;
     Timer timer;
     
     bool grabbing;
+	bool prev_no_hand = true;
     
     GestoosHelp *help;
 
@@ -132,13 +134,23 @@ void exampleApp::update()
     
     hand = cinderactor.get_hands().first;
     
-    
     if( hand.is_present() )
     {
+		if (prev_no_hand)
+		{
+			hand_pos_c.x = hand.get_pos().x;
+			hand_pos_c.y = hand.get_pos().y;
+		}
+			
+
         Vec2f hand_pos_inst ;
+		float mult = 2.0;
         hand_pos_inst.x = hand.get_unit_pos().x * cinder::app::getWindowWidth() ;
+		hand_pos_inst.x = (hand.get_pos().x - hand_pos_c.x) / 320 * getWindowWidth() * mult + getWindowWidth() / 2.0;
+
         // ( hand.get_pos().x / 320.0 - 0.5 ) * cinder::app::getWindowWidth() *2.0 +   cinder::app::getWindowWidth()/2.0 ;
         hand_pos_inst.y = hand.get_unit_pos().y * cinder::app::getWindowHeight() ;
+		hand_pos_inst.y = (hand.get_pos().y - hand_pos_c.y) / 240 * getWindowHeight() * mult + getWindowHeight() / 2.0;
         //( hand.get_pos().y / 240 - 0.5 ) * cinder::app::getWindowHeight() *2.0 +   cinder::app::getWindowHeight()/2.0 ;
         
         hand_pos_f += (hand_pos_inst - hand_pos_f) * 0.2;
@@ -169,7 +181,12 @@ void exampleApp::update()
         {
             box.set_pos( hand_pos_f );
         }
+		prev_no_hand = false;
     }
+	else
+	{
+		prev_no_hand = true;
+	}
     box.update();
 }
 
